@@ -2,7 +2,7 @@
 
 This project is a wave analyser which reads audio input from a microphone and outputs both numerical and graphical data about the captured sound waves. 
 
-The program usex 4 classes: main.py, input.py, analysis.py, visualization.py.
+The program uses 4 classes: main.py, input.py, analysis.py, visualization.py.
     
 
 1) Audion capture

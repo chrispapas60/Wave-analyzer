@@ -1,22 +1,23 @@
 import numpy as np
 import wave 
 import pyaudio
-import struct
 import matplotlib.pyplot as plt
+import os
 
 sample_form = pyaudio.paInt16
 sr = 44100
 channels = 1
 sec = 5
 chunk = 1024
-wave_out = "output.wav"
+wave_out = os.path.join(os.path.dirname(os.path.abspath(__file__)),"output.wav")
+print("saving to" , wave_out)
 
 p = pyaudio.PyAudio()
 
 stream = p.open(format=sample_form,
                 channels=channels,
                 rate=sr,
-                frames_per_buffer=chunk,input=True, output=True)
+                frames_per_buffer=chunk,input=True,)
 print("rec")
 frames = []
 for i in range(0,int(sr/chunk * sec)) :

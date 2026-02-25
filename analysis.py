@@ -59,4 +59,7 @@ elif sample_width == 4:
 
 fig, ax = plt.subplots()
 ax.plot(left, '-')
+plt.xlabel('Sample Index')
+plt.ylabel('Amplitude')
 plt.show()
+

@@ -1,13 +1,20 @@
 import numpy as np
 import wave 
 import pyaudio
-import matplotlib.pyplot as plt
 import os
+
+
+print("Do you want to record?")
+mpekas = input()
+while mpekas != "y" :
+     print("change your mind yet?")
+     mpekas = input()
+print("How many second you want to record?")
 
 sample_form = pyaudio.paInt16
 sr = 44100
 channels = 1
-sec = 5
+sec = float(input())
 chunk = 1024
 wave_out = os.path.join(os.path.dirname(os.path.abspath(__file__)),"output.wav")
 print("saving to" , wave_out)
@@ -17,8 +24,9 @@ p = pyaudio.PyAudio()
 stream = p.open(format=sample_form,
                 channels=channels,
                 rate=sr,
-                frames_per_buffer=chunk,input=True,)
-print("rec")
+                frames_per_buffer=chunk,
+                input=True,)
+print("mprokologo twra perimene gt grafw")
 frames = []
 for i in range(0,int(sr/chunk * sec)) :
      data = stream.read(chunk)
@@ -35,3 +43,4 @@ wf.setsampwidth(p.get_sample_size(sample_form))
 wf.setframerate(sr)
 wf.writeframes(b''.join(frames))
 wf.close()
+

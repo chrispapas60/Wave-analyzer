@@ -4,20 +4,6 @@ import scipy as sp
 import struct
 import wave
 
-import matplotlib.pyplot as plt
-import sympy as smp
-from skimage import color
-from skimage import io
-from scipy.fft import fftfreq
-from scipy.fft import fft, ifft, fft2, ifft2
-
-plt.style.use(['scinece', 'notebook'])
-
-class Transform:
-    pass
-#After this make this input into a variable storing a .wav file so multiple/any .wav files can be saved and used
-#Maybe better to make this a class with a class function doing the below, then can store new .wav files as instances of that class and operate on them thusly
-
 
 #Using pythons Wave module to parse the .wav file, the "rb" tag means read binary
 with wave.open("output.wav", "rb") as wf :

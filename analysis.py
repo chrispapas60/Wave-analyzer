@@ -3,12 +3,16 @@ import scipy as sp
 import struct
 import wave
 import matplotlib.pyplot as plt
+from pathlib import Path
+
 #After this make this input into a variable storing a .wav file so multiple/any .wav files can be saved and used
 #Maybe better to make this a class with a class function doing the below, then can store new .wav files as instances of that class and operate on them thusly
 
+scr_dir = Path(__file__).resolve().parent
+filepath = scr_dir / "output.wav"
 
 #Using pythons Wave module to parse the .wav file, the "rb" tag means read binary
-with wave.open("output.wav", "rb") as wf :
+with wave.open(str(filepath), "rb") as wf :
 
 #Important data of the .wav file is stored in variables
 #Channel info (1,2 --> mono, sterio) as n_channels

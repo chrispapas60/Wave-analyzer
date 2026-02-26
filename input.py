@@ -42,6 +42,4 @@ wf.setnchannels(channels)
 wf.setsampwidth(p.get_sample_size(sample_form))
 wf.setframerate(sr)
 wf.writeframes(b''.join(frames))
-wf.close()
-
-
+wf.close())

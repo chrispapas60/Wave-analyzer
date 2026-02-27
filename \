@@ -1,0 +1,12 @@
+
+
+Fixed a bug with syntax erroring due to unfinished code in input.py
+The project now runs with minimal functionality.
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch BANGER
+# Changes to be committed:
+#	modified:   __pycache__/input.cpython-314.pyc
+#	new file:   outputs/2026-02-27_09-12-18.wav
+#

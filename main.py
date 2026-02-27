@@ -1,5 +1,5 @@
-from input import keystroke_record, fixed_interval_record
-
+from record import keystroke_record, fixed_interval_record
+from analysis import AudioFile
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 
      
@@ -43,9 +43,70 @@ def record_audio():
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-def analyse():
-    pass
+from pathlib import Path
 
+def analyse():
+
+    script_dir = Path(__file__).resolve().parent
+    output_dir = script_dir / "outputs"
+
+    if not output_dir.exists():
+        print("No 'outputs' folder found.\n")
+        return
+
+    wav_files = list(output_dir.glob("*.wav"))
+
+    if not wav_files:
+        print("No WAV files found in outputs folder.\n")
+        return
+
+    # File Selection
+    print("\nAvailable WAV files:\n")
+    for i, file in enumerate(wav_files, start=1):
+        print(f"{i}. {file.name}")
+
+    while True:
+        try:
+            choice = int(input("\nSelect a file number (or 0 to go back): "))
+            if choice == 0:
+                return
+            if 1 <= choice <= len(wav_files):
+                selected_file = wav_files[choice - 1]
+                break
+            else:
+                print("Invalid selection.")
+        except ValueError:
+            print("Enter a valid number.")
+
+    # Load selected file
+    audio = AudioFile(selected_file)
+
+    # Analysis Submenu
+    while True:
+        print(
+            "\nWhat would you like to do?\n"
+            "1. Plot waveform\n"
+            "2. Plot FFT\n"
+            "3. Plot spectrogram\n"
+            "4. Return to main menu"
+        )
+
+        action = input("Make a selection: ")
+
+        if action == "1":
+            audio.plot_waveform()
+
+        elif action == "2":
+            audio.plot_fft()
+
+        elif action == "3":
+            audio.spectrogram()
+
+        elif action == "4":
+            return
+
+        else:
+            print("Invalid selection.")
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
 def exit_program():

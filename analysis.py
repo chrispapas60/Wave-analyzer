@@ -1,65 +1,191 @@
 import numpy as np
-import scipy as sp
-import struct
 import wave
 import matplotlib.pyplot as plt
+plt.ion() # Turn on interactive mode to allow multiple functions to be plotted
 from pathlib import Path
 
-#After this make this input into a variable storing a .wav file so multiple/any .wav files can be saved and used
-#Maybe better to make this a class with a class function doing the below, then can store new .wav files as instances of that class and operate on them thusly
 
-scr_dir = Path(__file__).resolve().parent
-filepath = scr_dir / "output.wav"
+class AudioFile:
 
-#Using pythons Wave module to parse the .wav file, the "rb" tag means read binary
-with wave.open(str(filepath), "rb") as wf :
+    def __init__(self, filepath):
+        self.filepath = Path(filepath)
+        self._load()
 
-#Important data of the .wav file is stored in variables
-#Channel info (1,2 --> mono, sterio) as n_channels
-#Sample width (1,2,4...(bytes) --> 8 bit, 16 bit, 32 bit ...) as sample_width
-#Samples per second (44100, 48000, 96000 etc) as sample_rate
-#Number of frames as n_frames
-    n_channels = wf.getnchannels()
-    sample_width = wf.getsampwidth()
-    sample_rate = wf.getframerate()
-    n_frames = wf.getnframes()
+   
+    def _load(self): # Loads the .wav file
 
-#Then the wf.readframes command reads audio data in the .wav file and returns those bytes in the variable frames 
-    frames = wf.readframes(n_frames)
+        with wave.open(str(self.filepath), "rb") as wf:
+            self.n_channels = wf.getnchannels()
+            self.sample_width = wf.getsampwidth()
+            self.sample_rate = wf.getframerate()
+            self.n_frames = wf.getnframes()
+            frames = wf.readframes(self.n_frames)
 
-#The framerate is stored as fmt with the struct format string "<{}B,h, or i " to denote  Little-endian and B,h, or i depending on the sample width (to denote 8, 16, or 32 bit samples)
-if sample_width == 1:
-    fmt = "<{}B".format(n_frames * n_channels)
-elif sample_width == 2:
-    fmt = "<{}h".format(n_frames * n_channels)
-elif sample_width == 4:
-    fmt = "<{}i".format(n_frames * n_channels)
-#Print's error if sample width is not 8, 16, or 32 bit
-else:
-    raise ValueError("Unsupported sample width: {}".format(sample_width))
+        self.duration = self.n_frames / self.sample_rate
 
-#Finally, struct unpacks the data from the fmt and frames variables into a numpy array stored in the variable samples
-samples = np.array(struct.unpack(fmt, frames))
+        # Determine numpy dtype
+        if self.sample_width == 1:
+            dtype = np.uint8
+        elif self.sample_width == 2:
+            dtype = np.int16
+        elif self.sample_width == 4:
+            dtype = np.int32
+        else:
+            raise ValueError("Unsupported sample width")
 
-#Split the data if it's stereo in preparation for fourier transform
-if n_channels == 2:
-    left = samples[::2]
-    right = samples[1::2]
-else:
-    left = samples
-    right = None
+        samples = np.frombuffer(frames, dtype=dtype) # The dtype allows numpy to interperet the raw bytes into specific integer data
 
-#Normalize values of sample to between -1 and 1
-if sample_width == 1:
-    left = (left - 128) / 128  # 8-bit samples are unsigned, so -128 to shift values from 0, 256 to -128, 128 first
-elif sample_width == 2:
-    left = left / 32768        # 16-bit samples are between - and + 32768
-elif sample_width == 4:
-    left = left / 2147483648   # 32-bit signed - and + 2147483648
+        # Split stereo to mono if needed
+        if self.n_channels == 2:
+            self.left = samples[::2]
+            self.right = samples[1::2]
+        else:
+            self.left = samples
+            self.right = None
 
-fig, ax = plt.subplots()
-ax.plot(left, '-')
-plt.xlabel('Sample Index')
-plt.ylabel('Amplitude')
-plt.show()
+        self._normalize()
 
+    # ---------------------------------
+    # Normalize to [-1, 1]
+    # ---------------------------------
+    def _normalize(self):
+
+        if self.sample_width == 1:
+            self.left = (self.left - 128) / 128
+        elif self.sample_width == 2:
+            self.left = self.left / 32768
+        elif self.sample_width == 4:
+            self.left = self.left / 2147483648
+
+    # ---------------------------------
+    # Time axis
+    # ---------------------------------
+    def time_axis(self):
+        return np.linspace(0, self.duration, len(self.left))
+
+    # ---------------------------------
+    # FFT
+    # ---------------------------------
+    def fft(self):
+
+        fft_vals = np.fft.rfft(self.left)
+        freqs = np.fft.rfftfreq(len(self.left), 1 / self.sample_rate)
+
+        magnitude = np.abs(fft_vals)
+
+        return freqs, magnitude
+
+    # ---------------------------------
+    # Plot waveform
+    # ---------------------------------
+    def plot_waveform(self, dark_mode=True):
+
+        t = self.time_axis()
+
+        if dark_mode:
+            plt.style.use("dark_background")
+            line_color = "#E7228E"
+        else:
+            plt.style.use("seaborn-v0_8")
+            line_color = "#0EDBD1"
+
+        fig, ax = plt.subplots(figsize=(12, 5), dpi=120)
+
+        ax.plot(t, self.left, color=line_color, linewidth=0.7)
+        ax.fill_between(t, self.left, 0, alpha=0.3)
+
+        ax.set_title("Waveform", fontsize=16, weight="bold")
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Amplitude")
+        ax.set_ylim(-1.1, 1.1)
+        ax.grid(True, alpha=0.15)
+
+        plt.tight_layout()
+        plt.show()
+
+    # ---------------------------------
+    # Plot FFT
+    # ---------------------------------
+    def plot_fft(self, dark_mode=True):
+
+        freqs, magnitude = self.fft()
+
+        if dark_mode:
+            plt.style.use("dark_background")
+            color = "#00F5D4"
+        else:
+            plt.style.use("seaborn-v0_8")
+            color = "#003049"
+
+        fig, ax = plt.subplots(figsize=(12, 5), dpi=120)
+
+        ax.plot(freqs, magnitude, color=color, linewidth=0.8)
+        ax.set_title("Frequency Spectrum (Magnitude)", fontsize=16, weight="bold")
+        ax.set_xlabel("Frequency (Hz)")
+        ax.set_ylabel("Magnitude")
+        ax.set_xlim(0, self.sample_rate / 2)
+
+        plt.tight_layout()
+        plt.show()
+
+    # ---------------------------------
+    # Spectrogram
+    # ---------------------------------
+    def spectrogram(self, dark_mode=True):
+
+        if dark_mode:
+            plt.style.use("dark_background")
+
+        fig, ax = plt.subplots(figsize=(12, 5), dpi=120)
+
+        Pxx, freqs, bins, im = ax.specgram(
+            self.left,
+            NFFT=1024,
+            Fs=self.sample_rate,
+            noverlap=512,
+            cmap="magma"
+        )
+
+        ax.set_title("Spectrogram", fontsize=16, weight="bold")
+        ax.set_xlabel("Time (s)")
+        ax.set_ylabel("Frequency (Hz)")
+
+        plt.colorbar(im).set_label("Intensity (dB)")
+
+        plt.tight_layout()
+        plt.show()
+
+
+# -------------------------------------------------
+# Program to Load WAV Files From /outputs
+# -------------------------------------------------
+
+def choose_wav_file():
+
+    script_dir = Path(__file__).resolve().parent
+    output_dir = script_dir / "outputs"
+
+    if not output_dir.exists():
+        print("No 'outputs' folder found.")
+        return None
+
+    wav_files = list(output_dir.glob("*.wav"))
+
+    if not wav_files:
+        print("No WAV files found in outputs folder.")
+        return None
+
+    print("\nAvailable WAV files:\n")
+
+    for i, file in enumerate(wav_files, start=1):
+        print(f"{i}. {file.name}")
+
+    while True:
+        try:
+            choice = int(input("\nSelect a file number: "))
+            if 1 <= choice <= len(wav_files):
+                return wav_files[choice - 1]
+            else:
+                print("Invalid selection.")
+        except ValueError:
+            print("Enter a valid number.")

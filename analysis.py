@@ -5,9 +5,14 @@ import wave
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-scrip_dir = Path(__file__).resolve.parent # Finds the parent directory of this currently running script
+#After this make this input into a variable storing a .wav file so multiple/any .wav files can be saved and used
+#Maybe better to make this a class with a class function doing the below, then can store new .wav files as instances of that class and operate on them thusly
 
-class audio_input_file:
+scr_dir = Path(__file__).resolve().parent
+filepath = scr_dir / "output.wav"
+
+#Using pythons Wave module to parse the .wav file, the "rb" tag means read binary
+with wave.open(str(filepath), "rb") as wf :
 
     def __init__(self, fname, ftype):
         self.fname = fname
@@ -79,30 +84,9 @@ elif sample_width == 2:
 elif sample_width == 4:
     left = left / 2147483648   # 32-bit signed - and + 2147483648
 
-# Create 3 plots
-fig, ax = plt.subplots(1, 3, figsize=(15,5))
-
-# Plot the original signal
-ax[0].plot(left)
-ax[0].set_title("Signal")
-ax[0].set_xlabel("Sample Index")
-ax[0].set_ylabel("Amplitude")
-
-# Plot the FFT in two parts
-fft = np.fft.fft(left)
-
-# Real part
-ax[1].plot(np.real(fft))
-ax[1].set_title("Real Part of FFT")
-ax[1].set_xlabel("Frequency Index")
-ax[1].set_ylabel("Magnitude")
-
-# Imaginary part
-ax[2].plot(np.imag(fft))
-ax[2].set_title("Imaginary Part of FFT")
-ax[2].set_xlabel("Frequency Index")
-ax[2].set_ylabel("Magnitude")
-
-# Clean up plotting errors and show
-plt.tight_layout()
+fig, ax = plt.subplots()
+ax.plot(left, '-')
+plt.xlabel('Sample Index')
+plt.ylabel('Amplitude')
 plt.show()
+

@@ -114,18 +114,6 @@ def fixed_interval_record():
                               break  # exit the loop
                          else:
                               print("Invalid input. Please enter 'y' or 'n'.")
-                              
-                   #print("Do you want to name the file? (y/n)")
-                   #while 1:
-                     #temp = input()
-                     #if temp.lower() == "y":
-                          #print("Enter new filename: ")
-                          #fname = input()
-                          #break
-                   #else :
-                          #fname = get_timestamp # If user doesn't want to rename, use the timestamp as the filename
-                          #break
-      
                break
           except:
                print("Invalid input. Please enter an integer between 1 and 60")
@@ -178,6 +166,7 @@ def fixed_interval_record():
      # Both counter and record run simultaneously using threading
      counter_thread.start()
      record(duration)
+
 
 
 

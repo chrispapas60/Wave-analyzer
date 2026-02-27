@@ -3,24 +3,33 @@
 -> INTRODUCTION
 This project is a wave analyser which reads audio input from a microphone and outputs both numerical and graphical data about the captured sound waves. It has the following functions.
 
-1) Audion capture
-2) Analysis 
-3) Real time streaming (not yet)
+1) Waveform visualization
+2) Fast Fourier Transform (FFT) spectrum analysis
+3) Spectrogram generation (Short-Time Fourier Transform)
 
-The main.py calls the other files.
-The record.py class handles the intake of audio information from the device's microphone, and translates that information into a machine readable format(.WAV). 
-Next, analysis.py reads the output of record.py and performs the requested mathematical calculations and outputs the amplitude, wave function, etc. of the sound wave.
+-> main.py
+    This is the entry point of the software, it handles user interaction and program flow
+-> recorder.py
+    This module is responsible for aduio capturing using PyAudio, it converts the sound from the computer's microphone to a 44.1 kHz mono .WAV files, stored in the outputs directory 
+-> analysis.py
+    Performs signal processing operations, such as:
+                                                   1) Signal normalization to {-1 , 1}
+                                                   2) FFT computation using NumPy
+                                                   3) Frequency spectrum magnitude extraction
+                                                   4) Spectrogram generation via STFT (Sort Time Fourier  Transformation)
+                                                   5) Time-domain waveform plotting
 
 -> INSTRUCTIONS
-
-1) Download all the files
-2) Place them on the same folder
-3) Run main.py on visual code or simular enviroment
-4) On the Serial consol you should see the menu with the options you have
+1) Download or clone all project files.
+2) Place them in the same directory.
+3) Install required dependencies
+4) Run main.py
 
 -> Possible future updates 
 
-1) Real time streaming mode
-2) Display of more information such as peak amplitude/frequency
-3) Addition of graphics and interactions
-4) Process and comparition of multiple samples
+1) Real-time streaming mode
+2) Adjustable FFT window selection
+3) Peak frequency and amplitude detection
+4) Export of numerical results (CSV)
+5) Multi-sample comparison mode
+6) Graphical User Interface (GUI)

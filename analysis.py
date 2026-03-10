@@ -5,70 +5,93 @@ import wave
 import matplotlib.pyplot as plt
 from pathlib import Path
 
-#After this make this input into a variable storing a .wav file so multiple/any .wav files can be saved and used
-#Maybe better to make this a class with a class function doing the below, then can store new .wav files as instances of that class and operate on them thusly
+# Find the path of the current script and define the WAV file to analyze 
+script_dir = Path(__file__).resolve().parent 
+filepath = script_dir / "output.wav"
 
-scr_dir = Path(__file__).resolve().parent
-filepath = scr_dir / "output.wav"
 
-#Using pythons Wave module to parse the .wav file, the "rb" tag means read binary
-with wave.open(str(filepath), "rb") as wf :
+class audio_input_file:
+    """
+    Represents an input audio file and stores its file information.
 
+    Attributes:
+        fname: Name of the file
+        ftype: Type of file (currently expected to be '.wav')
+        fpath: Full path to the audio file
+    """
+     
     def __init__(self, fname, ftype):
         self.fname = fname
-        self.ftype = ftype #should be 3 options ".wav" "mp3" etc
-        self.fpath = script_dir / fname 
+        self.ftype = ftype 
+        self.fpath = script_dir / fname
+    
+    def get_metadata(self):
+         """
+        Open the WAV file and extract its basic metadata.
 
-    def filename(self)
-        filepath = 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
+        Returns:
+            n_channels, sample_width, sample_rate, n_frames
+        """
+         with wave.open(str(filepath), "rb") as wf :
+            n_channels = wf.getnchannels() # 1 = mono, 2 = stereo
+            sample_width = wf.getsampwidth() # bytes per sample
+            sample_rate = wf.getframerate() #samples per second
+            n_frames = wf.getnframes() # total number of frames
 
+            return n_channels, sample_width, sample_rate, n_frames
+     
+    def get_frames(self):
+        """
+        Read the raw audio frames from the WAV file.
 
-class audio_object: # This will be any instance of audio, we will pull it's data and store it as this class
+        Returns:
+            Raw binary frame data
+        """
+        with wave.open(str(self.fpath), "rb") as wf:
+            frames = wf.readframes(wf.getnframes())
 
+        return frames
+         
+class audio_object: 
+    """
+    Represents a loaded audio file and stores its basic metadata.
+
+    Attributes:
+        n_channels: Number of audio channels (1 = mono, 2 = stereo)
+        sample_width: Number of bytes used per sample
+        sample_rate: Number of samples per second
+        n_frames: Total number of audio frames in the file
+    """
     def __init__(self, n_channels, sample_width, sample_rate, n_frames,):
-        
+    # Initialize an audio_object instance with the main audio properties
+
         self.n_channels = n_channels
         self.sample_width = sample_width
         self.sample_rate = sample_rate
         self.n_frames = n_frames 
 
+# Create an input file object and extract its metadata 
+audio_file = audio_input_file("output.wav", ".wav")
+n_channels, sample_width, sample_rate, n_frames = audio_file.get_metadata()
+frames = audio_file.get_frames()
 
+#store the extracted metadata in an audio_object instance
+audio = audio_object(n_channels, sample_width, sample_rate, n_frames)
 
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - #
-
-#so, this module should act on a class object called audio_input_file, which will have a filetype and a filepath
-#It will pull the ftype and then pull the data accordingly (now only .wav)
-#Then, it will make a new instance of the audio_object class, filling all the requisite variables
-
-
-# Finds path of currently running program, gets it's parent directory
-script_dir = Path(__file__).resolve().parent
-filepath = script_dir / "output.wav"
-
-# Wave module parses the .wav file, "rb" tag -> read binary
-with wave.open(str(filepath), "rb") as wf :
-
-    n_channels = wf.getnchannels() # Channel info (1 -> mono, 2 -> sterio)
-    sample_width = wf.getsampwidth() # Sample width (1 -> 8 bit, 2 -> 16 bit, 4 -> 32 bit)
-    sample_rate = wf.getframerate() # Samples per second
-    n_frames = wf.getnframes() # Number of frames
-
-# The framerate is stored as fmt with the correct struct format string depending on if it is 8, 16, or 32 bit
-if sample_width == 1:
-    fmt = "<{}B".format(n_frames * n_channels)
-elif sample_width == 2:
-    fmt = "<{}h".format(n_frames * n_channels)
-elif sample_width == 4:
-    fmt = "<{}i".format(n_frames * n_channels)
-# Print's error if sample width is not 8, 16, or 32 bit
+#Determine the correct struct format string based on sample width 
+if audio.sample_width == 1:
+    fmt = "<{}B".format(audio.n_frames * audio.n_channels)
+elif audio.sample_width == 2:
+    fmt = "<{}h".format(audio.n_frames * audio.n_channels)
+elif audio.sample_width == 4:
+    fmt = "<{}i".format(audio.n_frames * audio.n_channels)
 else:
-    raise ValueError("Unsupported sample width: {}".format(sample_width))
+    raise ValueError("Unsupported sample width: {}".format(audio.sample_width))
 
-# Finally, struct unpacks the data from the fmt and frames variables into a numpy array stored in the variable samples
+#  Convert the raw binary frame data into a NumPy array of samples 
 samples = np.array(struct.unpack(fmt, frames))
 
-#Split the data if it's stereo in preparation for fourier transform
+#Split the data if the audio is stereo 
 if n_channels == 2:
     left = samples[::2]
     right = samples[1::2]
@@ -76,14 +99,15 @@ else:
     left = samples
     right = None
 
-# Normalize sample values between -1, 1
+# Normalize sample values to the range [-1, 1]
 if sample_width == 1:
-    left = (left - 128) / 128  # 8-bit samples are unsigned --> subtract 128 to shift values from 0, 256 to -128, 128
+    left = (left - 128) / 128  # 8-bit samples are unsigned, so shift values before normalization 
 elif sample_width == 2:
-    left = left / 32768        # 16-bit samples signed between - and + 32768
+    left = left / 32768       
 elif sample_width == 4:
-    left = left / 2147483648   # 32-bit signed - and + 2147483648
+    left = left / 2147483648   
 
+# Plot the waveform of the left channel 
 fig, ax = plt.subplots()
 ax.plot(left, '-')
 plt.xlabel('Sample Index')

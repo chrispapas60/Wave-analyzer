@@ -19,7 +19,7 @@ class RecordAudioMenu:
             print("Starting keystroke mode...\n")
             keystroke_record()
             return None
-
+        
         def fixed_interval():
             # Starts recording audio continuosly at fixed inervals 
             print("Starting keystroke mode...\n")
@@ -77,6 +77,7 @@ class MainMenu:
     """ 
     def main_menu(self):
         
+        record_menu = RecordAudioMenu()
     #Loop that keeps the program running until the user chooses to exit 
         while True:
             print(
@@ -90,7 +91,7 @@ class MainMenu:
    # Dictionary mapping user input corresponding function 
    # This allows the program to call the correct action based on the user's choice
             menu = {
-            "1": record_audio,
+            "1": record_menu.record_audio,
             "2": analyse,
             "3": exit_program
             }
@@ -113,4 +114,4 @@ class MainMenu:
 
 if __name__ == "__main__":
     menu = MainMenu()
-    Menu.main_menu()
+    menu.main_menu()

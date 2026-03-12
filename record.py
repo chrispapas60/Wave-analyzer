@@ -2,6 +2,7 @@ import os
 import wave
 import pyaudio
 import threading
+import time
 from datetime import datetime
 
 def get_timestamp():
@@ -151,6 +152,7 @@ def fixed_interval_record():
      # Both counter and record run simultaneously using threading
      counter_thread.start()
      record(duration)
+
 
 
 

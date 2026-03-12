@@ -156,36 +156,3 @@ class AudioFile:
         plt.show()
 
 
-# -------------------------------------------------
-# Program to Load WAV Files From /outputs
-# -------------------------------------------------
-
-def choose_wav_file():
-
-    script_dir = Path(__file__).resolve().parent
-    output_dir = script_dir / "outputs"
-
-    if not output_dir.exists():
-        print("No 'outputs' folder found.")
-        return None
-
-    wav_files = list(output_dir.glob("*.wav"))
-
-    if not wav_files:
-        print("No WAV files found in outputs folder.")
-        return None
-
-    print("\nAvailable WAV files:\n")
-
-    for i, file in enumerate(wav_files, start=1):
-        print(f"{i}. {file.name}")
-
-    while True:
-        try:
-            choice = int(input("\nSelect a file number: "))
-            if 1 <= choice <= len(wav_files):
-                return wav_files[choice - 1]
-            else:
-                print("Invalid selection.")
-        except ValueError:
-            print("Enter a valid number.")

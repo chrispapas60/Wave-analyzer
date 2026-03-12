@@ -1,19 +1,3 @@
-import numpy as np
-import wave 
-import pyaudio
-import os
-from datetime import datetime # Here I'm importing the datetime class from within the module datetime
-import time
-import threading
-
-# Get current date and time
-def get_timestamp():
-    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-
-# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-
 import os
 import wave
 import pyaudio
@@ -166,6 +150,7 @@ def fixed_interval_record():
      # Both counter and record run simultaneously using threading
      counter_thread.start()
      record(duration)
+
 
 
 
